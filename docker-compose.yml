@@ -1,0 +1,19 @@
+version: '3'
+services:
+  comments:
+    build: ./comments
+    ports:
+      - "5001:5001"
+  posts:
+    build: ./posts
+    ports:
+      - "5002:5002"
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - comments
+      - posts
