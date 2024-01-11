@@ -2,6 +2,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-@app.route('/')
+
+@app.route('/api')
 def resource2():
-    return "Hello from Service 2, Resource 2!"
+    return "Hello from Service 1, Resource 1!"
