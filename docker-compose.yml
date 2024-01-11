@@ -8,6 +8,10 @@ services:
     build: ./posts
     ports:
       - "5002:5002"
+  auth:
+    build: ./auth
+    ports:
+      - "5003:5003"
   nginx:
     image: nginx:latest
     ports:
@@ -17,3 +21,4 @@ services:
     depends_on:
       - comments
       - posts
+      - auth
