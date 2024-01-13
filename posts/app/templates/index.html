@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div id="addPostSection">
+    <a href="/posts/add_post">
+        <button>Add New Post</button>
+    </a>
+</div>
+
+<div id="postsContainer">
+    {% if posts %}
+        {% for post in posts %}
+            <div class="post">
+                <h2>{{ post.title }}</h2>
+                <p>{{ post.content }}</p>
+                <button onclick="deletePost({{ post.id }})">Delete Post</button>
+
+                <form class="commentForm" method="post">
+                    <label for="comment_{{ post.id }}">Add Comment:</label>
+                    <input type="text" name="comment" id="comment_{{ post.id }}" class="commentInput" required>
+                    <button type="button" class="commentButton" onclick="submitComment({{ post.id }})">Submit Comment</button>
+                </form>
+                <a href="/posts/get_post/{{ post.id }}">
+                    <button>See Post</button>
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No posts available.</p>
+    {% endif %}
+</div>
+
+{% if message %}
+    <div id="messageContainer">
+        <p>{{ message }}</p>
+    </div>
+{% endif %}
+
+<style>
+    .commentForm {
+        margin-top: 10px;
+    }
+
+    #addPostSection {
+        margin-top: 20px;
+    }
+
+    #postsContainer {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .post {
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+        padding: 10px;
+        background-color: #f9f9f9;
+    }
+
+    button {
+        background-color: #ff0000;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #cc0000;
+    }
+
+    #messageContainer {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #dff0d8;
+        border: 1px solid #3c763d;
+        color: #3c763d;
+    }
+</style>
+
+<script>
+    async function deletePost(postId) {
+        try {
+            const response = await fetch(`/posts/delete_post/${postId}`, {
+                method: 'POST',
+            });
+
+            if (response.ok) {
+                console.log('Post deleted successfully');
+                location.reload();
+            } else {
+                console.error('Failed to delete post:', response.status);
+            }
+        } catch (error) {
+            console.error('Error during post deletion:', error);
+        }
+    }
+    async function submitComment(postId) {
+        try {
+            const commentInput = document.getElementById(`comment_${postId}`);
+            const text = commentInput.value;
+
+            const response = await fetch(`/comments/add_comment/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            if (response.ok) {
+                console.log('Comment added successfully');
+                location.reload();
+            } else {
+                console.error('Failed to add comment:', response.status);
+            }
+        } catch (error) {
+            console.error('Error during comment submission:', error);
+        }
+    }
+</script>
+
+{% endblock %}
