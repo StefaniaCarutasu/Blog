@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog App</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    #postsContainer {
+        margin-top: 20px;
+    }
+
+    .post {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+    }
+
+    #addPostForm {
+        margin-bottom: 20px;
+    }
+
+    #messageContainer {
+        margin-top: 20px;
+        color: green;
+    }
+</style>
+</head>
+<body>
+    <h1>Blog Posts</h1>
+    {% block content %} {% endblock %}
+</body>
+</html>

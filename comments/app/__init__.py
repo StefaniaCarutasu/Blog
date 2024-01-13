@@ -51,7 +51,8 @@ def create_comment(text: str, post_id: int) -> None:
     cursor.close()
     connection.close()
 
-def list_comments(post_id: int) -> List[Dict]:
+
+def list_comments_for_post(post_id: int) -> List[Dict]:
     config = {
         'user': 'root',
         'password': 'example',
@@ -77,19 +78,6 @@ def list_comments(post_id: int) -> List[Dict]:
     return results
 
 
-@app.route('/add_comment', methods=['POST'])
-def add_comment():
-    if request.method == 'POST':
-        data = request.get_json()
-        if 'text' in data and 'post_id' in data:
-            create_comment(data['text'], data['post_id'])
-            return jsonify({'status': 'success', 'message': 'Comment added successfully'})
-        else:
-            return jsonify({'status': 'error', 'message': 'Text or post_id parameter is missing'})
-    else:
-        return jsonify({'status': 'error', 'message': 'Invalid request method'})
-
-
 @app.route('/')
 def get_comments():
     return jsonify({'comments': list_comments()})
@@ -97,5 +85,25 @@ def get_comments():
 
 @app.route('/get_comments/<int:post_id>', methods=['GET'])
 def get_comments_for_post(post_id):
-    comments = list_comments(post_id)
+    comments = list_comments_for_post(post_id)
     return jsonify({'comments': comments})
+
+
+@app.route('/add_comment/<int:post_id>', methods=['POST'])
+def add_comment(post_id):
+    app.logger.info(f"Received POST request for adding comment to post_id {post_id}")
+
+    if request.method == 'POST':
+        data = request.get_json()
+        app.logger.info(f"Received data: {data}")
+
+        if 'text' in data:
+            create_comment(data['text'], post_id)
+            app.logger.info("Comment added successfully")
+            return jsonify({'status': 'success', 'message': 'Comment added successfully'})
+        else:
+            app.logger.error("Text parameter is missing")
+            return jsonify({'status': 'error', 'message': 'Text parameter is missing'})
+    else:
+        app.logger.error("Invalid request method")
+        return jsonify({'status': 'error', 'message': 'Invalid request method'})
