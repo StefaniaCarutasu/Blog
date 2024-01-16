@@ -1,22 +1,41 @@
-<!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<nav>
-  <h1>Flaskr</h1>
-  <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-    {% else %}
-      <li><a href="{{ url_for('register') }}">Register</a>
-    {% endif %}
-  </ul>
-</nav>
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog App</title>
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+    }
+
+    h1 {
+        color: #333;
+    }
+
+    #postsContainer {
+        margin-top: 20px;
+    }
+
+    .post {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 15px;
+        background-color: #f9f9f9;
+    }
+
+    #addPostForm {
+        margin-bottom: 20px;
+    }
+
+    #messageContainer {
+        margin-top: 20px;
+        color: green;
+    }
+</style>
+</head>
+<body>
+    {% block content %} {% endblock %}
+</body>
+</html>
