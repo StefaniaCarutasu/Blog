@@ -1,24 +1,21 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div id="registerContainer">
-    <h1>Register</h1>
-    <form id="registerForm" method="post">
+<div id="loginContainer">
+    <h1>Login</h1>
+    <form id="loginForm" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" class="form-input" required>
 
         <label for="password">Password:</label>
         <input id="password" class="form-input" required></input>
 
-        <label for="password">Confirm password:</label>
-        <input id="confirmPassword" class="form-input" required></input>
-
-        <button type="button" class="form-button" onclick="register()">Register</button>
+        <button type="button" class="form-button" onclick="login()">Login</button>
     </form>
 </div>
 
 <style>
-    #registerContainer {
+    #loginContainer {
         max-width: 400px;
         margin: 0 auto;
         padding: 20px;
@@ -59,17 +56,16 @@
 </style>
 
 <script>
-    async function register() {
+    async function login() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
 
-        const response = await fetch('/auth/register', {
+        const response = await fetch('/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password, confirmPassword }),
+            body: JSON.stringify({ username, password }),
         });
 
         if (response.ok) {

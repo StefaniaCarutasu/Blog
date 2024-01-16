@@ -41,7 +41,7 @@
     <div class="error-container">
         <h1 class="error-heading">Error</h1>
         <p class="error-message">An error occurred: <span class="error-code">{{ error_message }}</span></p>
-        <a href="{{ url_for('/auth/register') }}" class="error-link">Go back to registration</a>
+        <a href="{{ url_for('login') }}" class="error-link">Go back to login</a>
     </div>
 </body>
 </html>
