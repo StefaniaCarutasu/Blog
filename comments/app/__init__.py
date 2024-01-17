@@ -1,19 +1,17 @@
-from typing import List, Dict
 from flask import Flask, request, jsonify
-import mysql.connector
-import json
-
-from flask_login import login_required, LoginManager
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask_login import LoginManager, login_required, UserMixin, current_user
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,82 +23,46 @@ class Users(db.Model, UserMixin):
     @property
     def is_active(self):
         return self.active
-    
+
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.filter_by(id=user_id).first()
+    return Users.query.get(int(user_id))
 
 
-def list_comments() -> List[Dict]:
-    config = {
-        'user': 'root',
-        'password': 'example',
-        'host': 'db',
-        'port': '3306',
-        'database': 'blog'
-    }
-    connection = mysql.connector.connect(**config)
-    cursor = connection.cursor(dictionary=True)
+class Comments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(255), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    # Join comments and posts tables to get comments with associated post information
-    query = '''
-    SELECT comments.id, comments.text, posts.title AS post_title
-    FROM comments
-    JOIN posts ON comments.post_id = posts.id
-    '''
-    cursor.execute(query)
-    results = cursor.fetchall()
+    user = db.relationship('Users', backref='comments')
 
-    cursor.close()
-    connection.close()
 
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship('Users', backref='posts')
+
+
+def list_comments() -> list:
+    comments = Comments.query.join(Posts).add_columns(Comments.id, Comments.text, Posts.title.label('post_title')).all()
+    results = [{'id': comment.id, 'text': comment.text, 'post_title': comment.post_title} for comment in comments]
     return results
 
 
 def create_comment(text: str, post_id: int) -> None:
-    config = {
-        'user': 'root',
-        'password': 'example',
-        'host': 'db',
-        'port': '3306',
-        'database': 'blog'
-    }
-    connection = mysql.connector.connect(**config)
-    cursor = connection.cursor()
-
-    # Insert comment with associated post id
-    query = 'INSERT INTO comments (text, post_id) VALUES (%s, %s)'
-    cursor.execute(query, (text, post_id))
-
-    connection.commit()
-    cursor.close()
-    connection.close()
+    user_id = current_user.id if current_user.is_authenticated else None
+    comment = Comments(text=text, post_id=post_id, user_id=user_id)
+    db.session.add(comment)
+    db.session.commit()
 
 
-def list_comments_for_post(post_id: int) -> List[Dict]:
-    config = {
-        'user': 'root',
-        'password': 'example',
-        'host': 'db',
-        'port': '3306',
-        'database': 'blog'
-    }
-    connection = mysql.connector.connect(**config)
-    cursor = connection.cursor(dictionary=True)
-
-    # Modified query to select comments for a specific post_id
-    query = '''
-    SELECT comments.id, comments.text
-    FROM comments
-    WHERE comments.post_id = %s
-    '''
-    cursor.execute(query, (post_id,))
-    results = cursor.fetchall()
-
-    cursor.close()
-    connection.close()
-
+def list_comments_for_post(post_id: int) -> list:
+    comments = Comments.query.filter_by(post_id=post_id).all()
+    results = [{'id': comment.id, 'text': comment.text} for comment in comments]
     return results
 
 
@@ -136,3 +98,4 @@ def add_comment(post_id):
     else:
         app.logger.error("Invalid request method")
         return jsonify({'status': 'error', 'message': 'Invalid request method'})
+

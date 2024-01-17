@@ -2,82 +2,62 @@
 
 {% block content %}
 
-<div id="addPostSection">
-    <a href="/posts/add_post">
-        <button>Add New Post</button>
-    </a>
-</div>
-
-<div id="postsContainer">
-    {% if posts %}
-        {% for post in posts %}
-            <div class="post">
-                <h2>{{ post.title }}</h2>
-                <p>{{ post.content }}</p>
-                <button onclick="deletePost({{ post.id }})">Delete Post</button>
-
-                <form class="commentForm" method="post">
-                    <label for="comment_{{ post.id }}">Add Comment:</label>
-                    <input type="text" name="comment" id="comment_{{ post.id }}" class="commentInput" required>
-                    <button type="button" class="commentButton" onclick="submitComment({{ post.id }})">Submit Comment</button>
-                </form>
-                <a href="/posts/get_post/{{ post.id }}">
-                    <button>See Post</button>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="text-center">
+                <a href="/posts/add_post" class="btn btn-primary rounded-circle position-absolute" style="top: 10%; left: 10%; transform: translate(0%, -50%); z-index: 100;">
+                    <i class="fas fa-plus"></i>
                 </a>
             </div>
-        {% endfor %}
-    {% else %}
-        <p>No posts available.</p>
-    {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-5"> {# Add margin-top to create space between the button and posts #}
+        <div class="col-md-8 offset-md-2">
+            {% if posts %}
+                {% for post in posts %}
+                    <div class="card mt-4 position-relative">
+                        <div class="card-body">
+                            <h2 class="card-title">{{ post.title }}</h2>
+                            <p class="card-text">{{ post.content }}</p>
+
+                            {% if post.username %}
+                                <p class="text-muted">Posted by: {{ post.username }}</p>
+                            {% endif %}
+
+                            <form class="commentForm mt-3" method="post">
+                                <div class="form-group">
+                                    <label for="comment_{{ post.id }}">Add Comment:</label>
+                                    <input type="text" name="comment" id="comment_{{ post.id }}" class="form-control" required>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="submitComment({{ post.id }})">Submit Comment</button>
+                            </form>
+
+                            <a href="/posts/get_post/{{ post.id }}" class="btn btn-info position-absolute" style="top: 0; right: 0;">
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+
+                            <button class="btn btn-danger position-absolute" style="top: 0; right: 2.5rem;" onclick="deletePost({{ post.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="mt-4">No posts available.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 {% if message %}
-    <div id="messageContainer">
-        <p>{{ message }}</p>
+    <div class="container mt-4">
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
     </div>
 {% endif %}
-
-<style>
-    .commentForm {
-        margin-top: 10px;
-    }
-
-    #addPostSection {
-        margin-top: 20px;
-    }
-
-    #postsContainer {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .post {
-        border: 1px solid #ccc;
-        margin-bottom: 20px;
-        padding: 10px;
-        background-color: #f9f9f9;
-    }
-
-    button {
-        background-color: #ff0000;
-        color: #fff;
-        border: none;
-        padding: 8px 12px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #cc0000;
-    }
-
-    #messageContainer {
-        margin-top: 20px;
-        padding: 10px;
-        background-color: #dff0d8;
-        border: 1px solid #3c763d;
-        color: #3c763d;
-    }
-</style>
 
 <script>
     async function deletePost(postId) {
@@ -96,12 +76,13 @@
             console.error('Error during post deletion:', error);
         }
     }
+
     async function submitComment(postId) {
         try {
-            const commentInput = document.getElementById(`comment_${postId}`);
+            const commentInput = document.getElementById('comment_${postId}');
             const text = commentInput.value;
 
-            const response = await fetch(`/comments/add_comment/${postId}`, {
+            const response = await fetch('/comments/add_comment/${postId}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

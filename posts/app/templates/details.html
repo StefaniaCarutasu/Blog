@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="post-detail">
-    <h1>{{ post.title }}</h1>
-    <p class="post-content">{{ post.content }}</p>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="post-detail">
+                <h1>{{ post.title }}</h1>
+                <p class="post-content">{{ post.content }}</p>
 
-    <h2>Comments</h2>
-    <ul class="comment-list">
-        {% for comment in comments %}
-            <li class="comment-item">{{ comment.text }}</li>
-        {% endfor %}
-    </ul>
+                <h2>Comments</h2>
+                <ul class="list-group comment-list">
+                    {% for comment in comments %}
+                        <li class="list-group-item">
+                            <strong>{{ comment.user.username }}</strong>: {{ comment.text }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
+
 <style>
     .post-detail {
-        max-width: 800px;
-        margin: 20px auto;
         padding: 20px;
         border: 1px solid #ddd;
         border-radius: 8px;
@@ -39,16 +46,13 @@
     }
 
     .comment-list {
-        list-style: none;
-        padding: 0;
+        margin-top: 20px;
     }
 
-    .comment-item {
+    .list-group-item {
         margin-bottom: 10px;
-        padding: 8px;
-        border: 1px solid #ddd;
+        padding: 10px;
         border-radius: 4px;
-        background-color: #f9f9f9;
     }
 </style>
 {% endblock %}
