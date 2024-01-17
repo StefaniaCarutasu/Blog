@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error</title>
+    <style>
+        .error-container {
+        text-align: center;
+        margin: 50px auto;
+        width: 50%;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border: 1px solid #ccc;
+        }
+
+        .error-heading {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .error-code {
+            font-weight: bold;
+        }
+
+        .error-link {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 class="error-heading">Error</h1>
+        <p class="error-message">An error occurred: <span class="error-code">{{ error_message }}</span></p>
+    </div>
+</body>
+</html>

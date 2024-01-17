@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_required, LoginManager, current_user
 from flask_login import UserMixin
 
-
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
@@ -50,20 +49,43 @@ class Comments(db.Model):
 
 
 def get_post_by_id(post_id: int) -> Dict:
-    post = Posts.query.filter_by(id=post_id).first()
+    post = Posts.query.filter_by(id=post_id).join(Users).add_columns(Posts.id, Posts.title, Posts.content,
+                                                                     Users.username).first()
     if post:
-        return {'id': post.id, 'title': post.title, 'content': post.content}
+        return {'id': post.id, 'title': post.title, 'content': post.content, 'username': post.username}
     return None
 
 
 def get_comments_for_post(post_id: int) -> List[Dict]:
-    comments = Comments.query.filter_by(post_id=post_id).all()
-    return [{'id': comment.id, 'text': comment.text} for comment in comments]
+    comments = Comments.query.filter_by(post_id=post_id).join(Users).add_columns(Comments.id, Comments.text,
+                                                                                 Users.username).all()
+    return [{'id': comment.id, 'text': comment.text, 'username': comment.username} for comment in comments]
+
+
+def get_comment_count(post_id):
+    comment_count = db.session.query(db.func.count(Comments.id)) \
+        .filter(Comments.post_id == post_id) \
+        .scalar()
+    return comment_count
 
 
 def list_posts() -> List[Dict]:
-    posts = Posts.query.join(Users).add_columns(Posts.id, Posts.title, Users.username).all()
-    return [{'id': post.id, 'title': post.title, 'username': post.username} for post in posts][::-1]
+    posts = Posts.query \
+        .join(Users) \
+        .add_columns(Posts.id, Posts.title, Users.username) \
+        .all()
+
+    result = [
+                 {
+                     'id': post.id,
+                     'title': post.title,
+                     'username': post.username,
+                     'comment_count': get_comment_count(post.id)
+                 }
+                 for post in posts
+             ][::-1]
+
+    return result
 
 
 def list_comments_for_post(post_id: int) -> List[Dict]:
@@ -106,7 +128,7 @@ def add_post():
 
 @app.route('/')
 def get_posts():
-    return render_template('index.html', posts=list_posts())
+    return render_template('index.html', posts=list_posts(), user=current_user)
 
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
