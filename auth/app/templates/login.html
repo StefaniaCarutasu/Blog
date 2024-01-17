@@ -1,28 +1,45 @@
 {% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}
+Login
+{% endblock %}
+
 
 {% block content %}
-<div id="loginContainer">
-    <h1>Login</h1>
-    <form id="loginForm" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" class="form-input" required>
 
-        <label for="password">Password:</label>
-        <input id="password" class="form-input" required></input>
 
-        <button type="button" class="form-button" onclick="login()">Login</button>
-    </form>
+<div id="loginContainer" class="container">
+    <div id="formContent">
+        <h1 class="formContent">Login</h1>
+        <div class="formContent" class="row">
+            <div class="col-md-10 col-lg-8 mx-lg-auto mx-md-auto">
+    
+                {{ render_form(form) }}
+    
+            <p class="pt-5"><strong>{{ message }}</strong></p>
+    
+            </div>
+        </div>
+    </div>
+    
 </div>
 
 <style>
     #loginContainer {
-        max-width: 400px;
+        max-width: 600px;
         margin: 0 auto;
         padding: 20px;
         border: 1px solid #ddd;
         background-color: #fff;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .formContent {
+        max-width: 400px;
+        margin: 0 auto;
+
     }
 
     label {
@@ -55,25 +72,4 @@
     }
 </style>
 
-<script>
-    async function login() {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-        });
-
-        if (response.ok) {
-            window.location.href = '/posts';
-        } else {
-            console.error('Failed to submit post:', response.status);
-            window.location.href = '/auth/error';
-        }
-    }
-</script>
 {% endblock %}
