@@ -14,7 +14,7 @@ import logging
 
 from flask_session import SqlAlchemySessionInterface
 # from app.extensions import db, sess, migrate
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, logout_user, login_required
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
@@ -111,4 +111,10 @@ def login():
             message = 'There is no user with this username!'    
 
     return render_template('login.html', form=form, message=message)
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('/auth/login')
 
