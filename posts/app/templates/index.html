@@ -39,10 +39,12 @@
                                 <i class="fas fa-arrow-right"></i> See Post
                             </a>
 
+                            {% if user %}
                             {% if post.username == user.username %}
                             <button class="btn btn-danger ml-2" onclick="deletePost({{ post.id }})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </div>

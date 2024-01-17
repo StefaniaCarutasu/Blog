@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'flask-app'
+    static_configs:
+      - targets:
+          - 'comments:5001'
+          - 'posts:5002'
+          - 'auth:5003'

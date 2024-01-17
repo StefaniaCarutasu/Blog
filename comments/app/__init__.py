@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, UserMixin, current_user
-
+from prometheus_flask_exporter import PrometheusMetrics
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
@@ -11,7 +11,11 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "auth.login"
-
+metrics = PrometheusMetrics(app, group_by='endpoint')
+common_counter = metrics.counter(
+    'by_endpoint_counter', 'Request count by endpoints',
+    labels={'endpoint': lambda: request.endpoint}
+)
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)

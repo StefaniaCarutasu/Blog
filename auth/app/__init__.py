@@ -15,7 +15,7 @@ import logging
 from flask_session import SqlAlchemySessionInterface
 # from app.extensions import db, sess, migrate
 from flask_login import LoginManager, login_user, logout_user, login_required
-
+from prometheus_flask_exporter import PrometheusMetrics
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 
@@ -28,7 +28,11 @@ login_manager.init_app(app)
 bcrypt = Bcrypt(app)
 bootstrap = Bootstrap5(app)
 csrf = CSRFProtect(app)
-
+metrics = PrometheusMetrics(app, group_by='endpoint')
+common_counter = metrics.counter(
+    'by_endpoint_counter', 'Request count by endpoints',
+    labels={'endpoint': lambda: request.endpoint}
+)
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
