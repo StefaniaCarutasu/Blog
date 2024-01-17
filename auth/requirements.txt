@@ -9,3 +9,4 @@ flask-bcrypt==1.0.1
 flask-session==0.5.0
 bootstrap-flask==2.3.3
 flask-wtf==1.2.0
+prometheus_flask_exporter
