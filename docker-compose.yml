@@ -13,7 +13,7 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - .comments/app:/comments/app
+      - ./comments:/app
   posts:
     build: ./posts
     ports:

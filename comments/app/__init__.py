@@ -2,22 +2,21 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, UserMixin, current_user
 
-app = Flask(__name__)
-
+app = Flask(__name__, template_folder='templates', static_folder='static')
+app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = "auth.login"
 
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(255))
-
     active = db.Column(db.Boolean, nullable=False, default=True)
 
     @property
@@ -27,15 +26,15 @@ class Users(db.Model, UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.query.get(int(user_id))
+    return Users.query.get(user_id)
 
 
 class Comments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(255), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
+    text = db.Column(db.Text)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    post = db.relationship('Posts', backref='comments')
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship('Users', backref='comments')
 
 
@@ -61,13 +60,12 @@ def create_comment(text: str, post_id: int) -> None:
 
 
 def list_comments_for_post(post_id: int) -> list:
-    comments = Comments.query.filter_by(post_id=post_id).all()
-    results = [{'id': comment.id, 'text': comment.text} for comment in comments]
+    comments = Comments.query.filter_by(post_id=post_id).join(Users).add_columns(Comments.id, Comments.text, Users.username).all()
+    results = [{'id': comment.id, 'text': comment.text, 'user': comment.username} for comment in comments]
     return results
 
 
 @app.route('/')
-@login_required
 def get_comments():
     return jsonify({'comments': list_comments()})
 
