@@ -1,11 +1,36 @@
 from typing import List, Dict
 from flask import Flask, request, jsonify, render_template, url_for
 import mysql.connector
-from werkzeug.utils import redirect
+
+from flask_login import login_required, LoginManager
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
+
 
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
+
+db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True)
+    password = db.Column(db.String(255))
+
+    active = db.Column(db.Boolean, nullable=False, default=True)
+
+    @property
+    def is_active(self):
+        return self.active
+    
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.filter_by(id=user_id).first()
 
 def get_post_by_id(post_id: int) -> Dict:
     config = {
@@ -123,6 +148,7 @@ def delete_post(post_id: int) -> None:
 
 
 @app.route('/add_post', methods=('GET', 'POST'))
+@login_required
 def add_post():
     if request.method == 'POST':
         data = request.get_json()
@@ -136,11 +162,13 @@ def add_post():
 
 
 @app.route('/')
+@login_required
 def get_posts():
     return render_template('index.html', posts=list_posts())
 
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
+@login_required
 def delete_post_route(post_id):
     if request.method == 'POST':
         # Delete the post and its comments
@@ -153,6 +181,7 @@ def delete_post_route(post_id):
 
 
 @app.route('/get_post/<int:post_id>', methods=['GET'])
+@login_required
 def get_post(post_id):
     post = get_post_by_id(post_id)
     comments = get_comments_for_post(post_id)
