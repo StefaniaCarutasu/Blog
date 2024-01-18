@@ -1,11 +1,16 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, login_required, UserMixin, current_user
+from pysyslogclient import SyslogClientRFC5424
+
 from prometheus_flask_exporter import PrometheusMetrics
+
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+syslog_client =SyslogClientRFC5424("localhost", 514, proto="TCP")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -71,6 +76,7 @@ def list_comments_for_post(post_id: int) -> list:
 
 @app.route('/')
 def get_comments():
+    syslog_client.log("")
     return jsonify({'comments': list_comments()})
 
 
@@ -92,12 +98,12 @@ def add_comment(post_id):
 
         if 'text' in data:
             create_comment(data['text'], post_id)
-            app.logger.info("Comment added successfully")
+            syslog_client.log("Comment added successfully")
             return jsonify({'status': 'success', 'message': 'Comment added successfully'})
         else:
-            app.logger.error("Text parameter is missing")
+            syslog_client.log("Text parameter is missing")
             return jsonify({'status': 'error', 'message': 'Text parameter is missing'})
     else:
-        app.logger.error("Invalid request method")
+        syslog_client.log("Adding comment failed")
         return jsonify({'status': 'error', 'message': 'Invalid request method'})
 

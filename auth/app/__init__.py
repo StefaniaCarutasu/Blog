@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import (
-    render_template, request, flash, redirect, url_for
+    render_template, request, flash, redirect, url_for, g
 )
 
 from flask_bootstrap import Bootstrap5
@@ -10,7 +10,10 @@ from wtforms.validators import DataRequired, Length
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin
-import logging
+
+from pysyslogclient import SyslogClientRFC5424
+
+syslog_client =SyslogClientRFC5424("localhost", 514, proto="TCP")
 
 from flask_session import SqlAlchemySessionInterface
 # from app.extensions import db, sess, migrate
@@ -58,7 +61,6 @@ class LoginForm(FlaskForm):
     password = PasswordField(validators=[Length(min=8, message='Too short')])
     submit = SubmitField('Register')
 
-
 @app.route('/')
 def auth_app():
     return app
@@ -76,6 +78,7 @@ def error():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    syslog_client.log("Register attempt")
     message = ''
     form = RegisterForm()
 
@@ -98,6 +101,8 @@ def register():
                 login_user(user)
 
                 return redirect('/posts')
+    else:
+        syslog_client.log("Register attempt: failed")
 
     return render_template('register.html', form=form, message=message)
 
@@ -118,7 +123,10 @@ def login():
             else:
                 message = 'Password not valid!'
         else:
+            syslog_client.log("Login attempt failed. No user with username " + username + " exists.")
             message = 'There is no user with this username!'
+    else:
+        syslog_client.log("Login attempt failed")
 
     return render_template('login.html', form=form, message=message)
 
