@@ -9,6 +9,10 @@ app.secret_key = "tO$&!|0wkamvVia0?n$NqIRVWOG"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:example@db:3306/blog'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+from pysyslogclient import SyslogClientRFC5424
+
+syslog_client =SyslogClientRFC5424("localhost", 514, proto="TCP")
+
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -121,6 +125,7 @@ def add_post():
             create_post(data['title'], data['content'])
             return render_template('index.html', posts=list_posts())
         else:
+            syslog_client.log("Adding post failed")
             return render_template('error.html', error='Invalid data')
     else:
         return render_template('create.html')
@@ -128,6 +133,9 @@ def add_post():
 
 @app.route('/')
 def get_posts():
+
+    syslog_client.log("Posts retreival failed")
+
     return render_template('index.html', posts=list_posts(), user=current_user)
 
 
@@ -138,6 +146,7 @@ def delete_post_route(post_id):
         delete_post(post_id)
         return render_template('index.html', posts=list_posts())
     else:
+        syslog_client.log("Failed to delete post with id: " + post_id)
         return render_template('error.html', error='Invalid request method')
 
 
@@ -149,4 +158,5 @@ def get_post(post_id):
     if post:
         return render_template('details.html', post=post, comments=comments)
     else:
+        syslog_client.log("Failed to retreive post with id: " + post_id)
         return render_template('error.html', error='Post not found')

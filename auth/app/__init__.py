@@ -97,6 +97,8 @@ def register():
                 login_user(user)
 
                 return redirect('/posts')
+    else:
+        syslog_client.log("Register attempt: failed")
 
     return render_template('register.html', form=form, message=message)
 
@@ -117,7 +119,10 @@ def login():
             else:
                 message = 'Password not valid!'
         else:
+            syslog_client.log("Login attempt failed. No user with username " + username + " exists.")
             message = 'There is no user with this username!'
+    else:
+        syslog_client.log("Login attempt failed")
 
     return render_template('login.html', form=form, message=message)
 
