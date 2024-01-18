@@ -24,6 +24,8 @@ services:
     build: ./auth
     ports:
       - "5003:5003"
+    volumes:
+      - ./auth:/app
   nginx:
     image: nginx:latest
     ports:
@@ -49,3 +51,9 @@ services:
       - 601:6601/tcp
       - 6514:6514/tcp
     restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
